@@ -1,4 +1,4 @@
-# ecb-stats-demos-matlab
+# ECB-oriented Data & Modelling Mini-Portfolio (MATLAB)
 
 This repository contains three self-contained MATLAB scripts that demonstrate **data management, modelling and visualisation** skills in a way that aligns with an ECB statistics & data culture (clarity, documentation, and reproducibility).
 
