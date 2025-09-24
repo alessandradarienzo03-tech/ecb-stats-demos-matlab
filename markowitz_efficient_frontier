@@ -1,0 +1,59 @@
+%% Markowitz Efficient Frontier (Quadratic Risk Minimisation)
+% Demonstrates mean-variance portfolio optimisation with linear constraints,
+% using fmincon. Shows: data setup, validation, optimisation, and visualisation.
+% Author: Alessandra D'Arienzo
+
+clc; clear;
+
+% Expected annual returns and covariance matrix
+mu = [0.10; 0.12; 0.07; 0.15];
+Sigma = [0.010, 0.002, 0.001, 0.003;
+         0.002, 0.015, 0.002, 0.004;
+         0.001, 0.002, 0.008, 0.002;
+         0.003, 0.004, 0.002, 0.020];
+
+n = length(mu);
+w0 = ones(n,1)/n;     % Initial guess
+Aeq = ones(1,n);      % Fully invested
+beq = 1;
+lb = zeros(n,1);      % No short selling
+
+% Range of target returns
+Rmin = min(mu);
+Rmax = max(mu);
+R_targets = linspace(Rmin, Rmax, 50);
+
+% Storage
+returns = zeros(size(R_targets));
+risks = zeros(size(R_targets));
+weights = zeros(n, length(R_targets));
+
+options = optimoptions('fmincon', 'Display', 'off', 'Algorithm', 'sqp');
+
+% Loop for efficient frontier
+for i = 1:length(R_targets)
+    R_target = R_targets(i);
+    A = -mu';
+    b = -R_target;
+    f = @(w) w'*Sigma*w;
+    [w_opt, fval] = fmincon(f, w0, A, b, Aeq, beq, lb, [], [], options);
+    returns(i) = mu' * w_opt;
+    risks(i) = sqrt(w_opt' * Sigma * w_opt);
+    weights(:,i) = w_opt;
+end
+
+% Plot
+figure;
+plot(risks, returns, 'b-', 'LineWidth', 2); grid on;
+xlabel('Portfolio Risk (Standard Deviation)');
+ylabel('Expected Return');
+title('Efficient Frontier (Markowitz Optimization)');
+
+[~, idx_min_var] = min(risks);
+hold on;
+plot(risks(idx_min_var), returns(idx_min_var), 'ro', 'MarkerSize', 8, 'MarkerFaceColor', 'r');
+text(risks(idx_min_var), returns(idx_min_var), '  Min Var Portfolio', 'VerticalAlignment', 'bottom');
+
+[~, idx_max_ret] = max(returns);
+plot(risks(idx_max_ret), returns(idx_max_ret), 'go', 'MarkerSize', 8, 'MarkerFaceColor', 'g');
+text(risks(idx_max_ret), returns(idx_max_ret), '  Max Return', 'VerticalAlignment', 'bottom');
