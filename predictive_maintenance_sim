@@ -1,0 +1,52 @@
+%% Predictive Maintenance Simulation
+% Simulates a degradation signal, triggers maintenance, and predicts
+% time-to-failure with a simple linear model.
+% Author: Alessandra D'Arienzo
+
+clc; clear; close all;
+% Simulation parameters
+time = (1:100)'; % 100 time steps
+soglia_rischio = 80; % Value indicating high risk of failure
+
+% Simulating machine degradation (e.g., temperature, vibration)
+degradation = 50 + cumsum(randn(100,1) + 0.5); 
+
+% Predictive maintenance trigger
+warning_level = 70; % Warning before reaching critic value
+maintenance = degradation > warning_level;
+
+% Plot results
+figure;
+plot(time, degradation, 'b', 'LineWidth', 2);
+hold on;
+yline(soglia_rischio, 'r--', 'LineWidth', 2, 'Label', 'Failure Threshold');
+yline(warning_level, 'g--', 'LineWidth', 2, 'Label', 'Warning Level');
+scatter(time(maintenance), degradation(maintenance), 50, 'r', 'filled');
+title('Predictive Maintenance Simulation');
+xlabel('Time');
+ylabel('Degradation Level');
+legend('Degradation', 'Failure Threshold', 'Warning Level', ...
+    'Maintenance Trigger');
+grid on;
+hold off;
+
+% Display warning message if degradation exceeds the warning level
+if any(degradation > warning_level)
+    fprintf(['Warning: Maintenance required! Degradation exceeded ' ...
+        'warning level.\n']);
+end
+
+% Simple Machine Learning Prediction (Linear Regression)
+p = polyfit(time, degradation, 1); % Fit a linear model (y = mx + c)
+predicted_time_to_failure = (soglia_rischio - p(2)) / p(1); 
+% Display prediction result
+fprintf('Predicted time to failure: %.2f time units\n', ...
+    predicted_time_to_failure);
+
+
+
+% Plot prediction result
+hold on;
+scatter(predicted_time_to_failure, soglia_rischio, 100, 'm', 'filled');
+text(predicted_time_to_failure, soglia_rischio, '  Predicted Failure', 'Color', 'm');
+hold off;
